@@ -26,8 +26,11 @@ void list_add_to_tail(struct list_head *new, struct list_head *head)
   head->prev = new;
 }
 
-void list_delete(struct list_head *prev, struct list_head *next)
+void list_delete(struct list_head *entry)
 {
+  struct list_head *prev,*next;
+  prev = entry->prev;
+  next = entry -> next;
   next->prev = prev;
   prev->next = next;
 }
@@ -36,8 +39,7 @@ int simple_init(void)
 {
   
 
-  struct birthday *p1,*p2,*p3,*p4,*p5;
-  struct birthday *ptr,*f;
+  struct birthday *p1,*p2,*p3,*p4,*p5,*f;
   struct list_head *p;
   i=1;
   printk(KERN_INFO "Loading Module\n");
@@ -78,7 +80,7 @@ int simple_init(void)
   INIT_LIST_HEAD(&p5->list);
   list_add_to_tail(&p5->list, &birthday_list);
 
-  
+  //list_for_each_entry()
   list_for_each(p, &birthday_list){
     f = list_entry(p,struct birthday, list);
     printk("Birthday %d is : ",i);
@@ -90,13 +92,21 @@ int simple_init(void)
 }
 
 void simple_exit(void){
-  struct birthday *ptr, *next;
+  struct birthday *ptr, *next,*f;
+  struct list_head *p;
   printk(KERN_INFO "Removing Module\n");
-  list_for_each_entry_safe(ptr, next, &birthday_list,list){
-    list_del(&ptr->list);
+
+
+  //list_for_each_entry_safe()
+  list_for_each(p,&birthday_list){
+    ptr = list_entry(p,struct birthday, list);
+    next = list_entry(p->next,struct birthday, list);
+    list_delete(&ptr->list);
     kfree(ptr);
   }
   i=1;
+
+  //list_for_each_entry()
   list_for_each(p, &birthday_list){
     f = list_entry(p,struct birthday, list);
     printk("Birthday %d is : ",i);
