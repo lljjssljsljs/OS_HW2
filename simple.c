@@ -1,19 +1,40 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/list.h>
 #include <linux/types.h>
 #include <linux/slab.h>
+#include <linix/list.h>
 
-  static LIST_HEAD(birthday_list);
-  struct birthday{
-    int day;
-    int month;
-    int year;
-    struct list_head list;
-  };
-  int i=1;
 
+struct list_head{
+  struct list_head *next;
+  struct list_head *prev;
+}
+static LIST_HEAD(birthday_list);
+
+struct birthday{
+  int day;
+  int month;
+  int year;
+  struct list_head list;
+};
+int i=1;
+
+
+
+void list_add_tail(struct list_head *new, strct list_head *head)
+{
+  head->prev->next=new;
+  new->prev = nead->prev;
+  new->next=head;
+  head->prev = new;
+}
+
+void list_del(struct list_head *prev, strct list_head *next)
+{
+  next->prev = prev;
+  prev->next = next;
+}
 
 int simple_init(void)
 {
