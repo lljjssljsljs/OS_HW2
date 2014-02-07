@@ -3,116 +3,64 @@
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/slab.h>
+#include <linux/sched.h>
 #include <linux/list.h>
 
-
-
-static LIST_HEAD(birthday_list);
-
-struct birthday{
-  int day;
-  int month;
-  int year;
-  struct list_head list;
-};
-int i=1;
-
-
-void list_add_to_tail(struct list_head *new, struct list_head *head)
-{
-  head->prev->next=new;
-  new->prev = head->prev;
-  new->next=head;
-  head->prev = new;
-}
-
-void list_delete(struct list_head *entry)
-{
-  struct list_head *prev,*next;
-  prev = entry->prev;
-  next = entry -> next;
-  next->prev = prev;
-  prev->next = next;
+struct list_head *list;
+void list_task(struct task_struct* task,int i){
+  	struct task_struct * task_entry;
+        int space;
+        //list_head head_children = task->children;
+	if(list_empty(&task->children)==0){
+	//if(list_empty(task)==0){
+	printk("It is not empty\n");
+	list_for_each(list,&task->children){
+	  task_entry = list_entry(list,struct task_struct, sibling);
+	  for(space=0;space<i;space++){
+		printk(" ");
+	  }
+	  printk("\\_[%d]\n",task_entry->pid);
+	  i++;
+	  list_task(task_entry,i);
+	}
+	
+        }else{
+		printk("empty\n");
+	}
 }
 
 int simple_init(void)
 {
-  
-
-  struct birthday *p1,*p2,*p3,*p4,*p5,*f;
-  struct list_head *p;
-  i=1;
+  //struct task_struct *task,*task2;
+  //struct list_head *list2;
+  //extern struct task_struct init_task = INIT_TASK(init_task);
+  //EXPORT_SYMBOL(init_task);
   printk(KERN_INFO "Loading Module\n");
-  p1 = kmalloc(sizeof(*p1),GFP_KERNEL);
-  p1 -> day = 20;
-  p1 -> month = 7;
-  p1 -> year = 1991;
-  INIT_LIST_HEAD(&p1->list);
-  list_add_to_tail(&p1->list, &birthday_list);
-
-    
-  p2 = kmalloc(sizeof(*p2),GFP_KERNEL);
-  p2 -> day = 23;
-  p2 -> month = 2;
-  p2 -> year = 1961;
-  INIT_LIST_HEAD(&p2->list);
-  list_add_to_tail(&p2->list, &birthday_list);
-
-  p3 = kmalloc(sizeof(*p3),GFP_KERNEL);
-  p3 -> day = 10;
-  p3 -> month = 11;
-  p3 -> year = 1989;
-  INIT_LIST_HEAD(&p3->list);
-  list_add_to_tail(&p3->list, &birthday_list);
-
+  list_task(&init_task,0);
   
-  p4 = kmalloc(sizeof(*p4),GFP_KERNEL);
-  p4 -> day = 2;
-  p4 -> month = 12;
-  p4 -> year = 1999;
-  INIT_LIST_HEAD(&p4->list);
-  list_add_to_tail(&p4->list, &birthday_list);
+  /*for_each_process(task){
+    printk("PID is %d\n",task->pid);
+    }*/
+   printk("\n--------------------\n");
+   /*list_for_each(list, &init_task.children){
+    if(list->prev!=NULL && list->next != NULL){
+      task = list_entry(list,struct task_struct, sibling);
+      printk("PID is %d\n",task->pid);
+      list_for_each(list2, &task->children){
+	task2 = list_entry(list2,struct task_struct, sibling);
+	printk("----PID is %d\n",task2->pid);
 
-  p5 = kmalloc(sizeof(*p5),GFP_KERNEL);
-  p5 -> day = 14;
-  p5 -> month = 9;
-  p5 -> year = 2001;
-  INIT_LIST_HEAD(&p5->list);
-  list_add_to_tail(&p5->list, &birthday_list);
-
-  //list_for_each_entry()
-  list_for_each(p, &birthday_list){
-    f = list_entry(p,struct birthday, list);
-    printk("Birthday %d is : ",i);
-    printk("day: %d, month %d, year %d\n",f->day, f-> month,f->year);
-    i++;
-  }
+      }
+    }
+    }*/
 
   return 0;
 }
 
 void simple_exit(void){
-  struct birthday *ptr, *next,*f;
-  struct list_head *p;
+
   printk(KERN_INFO "Removing Module\n");
 
-
-  //list_for_each_entry_safe()
-  list_for_each(p,&birthday_list){
-    ptr = list_entry(p,struct birthday, list);
-    next = list_entry(p->next,struct birthday, list);
-    list_delete(&ptr->list);
-    kfree(ptr);
-  }
-  i=1;
-
-  //list_for_each_entry()
-  list_for_each(p, &birthday_list){
-    f = list_entry(p,struct birthday, list);
-    printk("Birthday %d is : ",i);
-    printk("day: %d, month %d, year %d\n",f->day, f-> month,f->year);
-    i++;
-  }
 }
 
 module_init(simple_init);
